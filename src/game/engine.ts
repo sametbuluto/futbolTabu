@@ -26,8 +26,10 @@ export function createMatch({ cards, settings, teamNames }: CreateMatchInput): M
     name,
     score: 0,
   }));
+  const now = new Date().toISOString();
 
   return {
+    id: `match-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     teams,
     settings,
     currentRound: 1,
@@ -38,7 +40,8 @@ export function createMatch({ cards, settings, teamNames }: CreateMatchInput): M
     roundStats: createEmptyRoundStats(),
     history: [],
     eventLog: [],
-    lastUpdatedAt: new Date().toISOString(),
+    createdAt: now,
+    lastUpdatedAt: now,
   };
 }
 

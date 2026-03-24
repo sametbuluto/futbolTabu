@@ -23,6 +23,13 @@ import { GameScreen } from './src/screens/GameScreen';
 import { PauseOverlay } from './src/screens/PauseOverlay';
 import { SummaryScreen } from './src/screens/SummaryScreen';
 import { ResultScreen } from './src/screens/ResultScreen';
+import { StatsScreen } from './src/screens/StatsScreen';
+import {
+  buildMatchStatsSummary,
+  loadCompletedMatches,
+  saveCompletedMatch,
+  type CompletedMatchRecord,
+} from './src/storage/history';
 import {
   clearActiveMatchSession,
   loadActiveMatchSession,
@@ -33,7 +40,16 @@ import { colors } from './src/theme/tokens';
 import { MatchState } from './src/types/game';
 import { SetupFormState } from './src/types/ui';
 
-type Screen = 'home' | 'setup' | 'rules' | 'countdown' | 'game' | 'paused' | 'summary' | 'result';
+type Screen =
+  | 'home'
+  | 'setup'
+  | 'rules'
+  | 'stats'
+  | 'countdown'
+  | 'game'
+  | 'paused'
+  | 'summary'
+  | 'result';
 
 type UndoState = {
   previousMatch: MatchState;
@@ -57,13 +73,16 @@ export default function App() {
   const [countdown, setCountdown] = useState(3);
   const [undoState, setUndoState] = useState<UndoState | null>(null);
   const [savedSession, setSavedSession] = useState<PersistedMatchSession | null>(null);
+  const [completedMatches, setCompletedMatches] = useState<CompletedMatchRecord[]>([]);
   const previousScreenRef = useRef<Screen>('home');
+  const savedCompletedMatchIdsRef = useRef<Set<string>>(new Set());
   const audio = useGameAudio(setup.soundEnabled);
 
   useEffect(() => {
     async function hydrateSession() {
-      const session = await loadActiveMatchSession();
+      const [session, history] = await Promise.all([loadActiveMatchSession(), loadCompletedMatches()]);
       setSavedSession(session);
+      setCompletedMatches(history);
     }
 
     void hydrateSession();
@@ -131,6 +150,21 @@ export default function App() {
   }, [audio, screen]);
 
   useEffect(() => {
+    if (screen !== 'result' || !match) {
+      return;
+    }
+
+    if (savedCompletedMatchIdsRef.current.has(match.id)) {
+      return;
+    }
+
+    savedCompletedMatchIdsRef.current.add(match.id);
+    void saveCompletedMatch(match).then((history) => {
+      setCompletedMatches(history);
+    });
+  }, [match, screen]);
+
+  useEffect(() => {
     const shouldPersist =
       match &&
       (screen === 'countdown' || screen === 'game' || screen === 'paused' || screen === 'summary');
@@ -153,6 +187,7 @@ export default function App() {
 
   const currentCard = useMemo(() => (match ? getCurrentCard(match) : null), [match]);
   const canPassInCurrentRound = match ? canUsePass(match) : false;
+  const statsSummary = useMemo(() => buildMatchStatsSummary(completedMatches), [completedMatches]);
 
   function updateSetup<K extends keyof SetupFormState>(key: K, value: SetupFormState[K]) {
     setSetup((current) => ({
@@ -177,6 +212,7 @@ export default function App() {
     setMatch(nextMatch);
     setCountdown(3);
     setUndoState(null);
+    savedCompletedMatchIdsRef.current.delete(nextMatch.id);
     setScreen('countdown');
   }
 
@@ -339,12 +375,22 @@ export default function App() {
           onDiscardSavedSession={discardSavedSession}
           onOpenRules={() => setScreen('rules')}
           onOpenSetup={() => setScreen('setup')}
+          onOpenStats={() => setScreen('stats')}
           onRestoreSavedSession={restoreSavedSession}
+          recentMatches={completedMatches.slice(0, 3)}
           savedSession={savedSession}
           soundEnabled={setup.soundEnabled}
+          statsSummary={statsSummary}
         />
       ) : null}
       {screen === 'rules' ? <RulesScreen onBack={() => setScreen('home')} /> : null}
+      {screen === 'stats' ? (
+        <StatsScreen
+          onBack={() => setScreen('home')}
+          recentMatches={completedMatches}
+          statsSummary={statsSummary}
+        />
+      ) : null}
       {screen === 'setup' ? (
         <SetupScreen
           onBack={() => setScreen('home')}

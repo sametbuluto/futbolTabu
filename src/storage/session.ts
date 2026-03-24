@@ -35,6 +35,11 @@ export async function loadActiveMatchSession() {
 
   return {
     ...parsed,
+    match: {
+      ...parsed.match,
+      id: parsed.match.id ?? `legacy-match-${Date.now()}`,
+      createdAt: parsed.match.createdAt ?? parsed.savedAt,
+    },
     setup: {
       ...parsed.setup,
       soundEnabled: parsed.setup.soundEnabled ?? true,

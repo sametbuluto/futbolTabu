@@ -55,6 +55,7 @@ export type GameEventLogItem = {
 };
 
 export type MatchState = {
+  id: string;
   teams: Team[];
   settings: GameSettings;
   currentRound: number;
@@ -65,6 +66,7 @@ export type MatchState = {
   roundStats: RoundStats;
   history: RoundSummary[];
   eventLog: GameEventLogItem[];
+  createdAt: string;
   lastUpdatedAt: string;
 };
 

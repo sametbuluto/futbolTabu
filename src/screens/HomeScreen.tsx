@@ -3,26 +3,33 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton, SecondaryButton } from '../components/Button';
 import { Panel } from '../components/Panel';
 import { StatChip } from '../components/StatChip';
+import { CompletedMatchRecord, MatchStatsSummary } from '../storage/history';
 import { PersistedMatchSession } from '../storage/session';
 import { colors, spacing } from '../theme/tokens';
 
 type HomeScreenProps = {
   savedSession: PersistedMatchSession | null;
+  recentMatches: CompletedMatchRecord[];
   soundEnabled: boolean;
+  statsSummary: MatchStatsSummary;
   onRestoreSavedSession: () => void;
   onDiscardSavedSession: () => void;
   onOpenSetup: () => void;
   onOpenRules: () => void;
+  onOpenStats: () => void;
   cardCount: number;
 };
 
 export function HomeScreen({
   savedSession,
+  recentMatches,
   soundEnabled,
+  statsSummary,
   onRestoreSavedSession,
   onDiscardSavedSession,
   onOpenSetup,
   onOpenRules,
+  onOpenStats,
   cardCount,
 }: HomeScreenProps) {
   return (
@@ -46,6 +53,20 @@ export function HomeScreen({
         </View>
       </Panel>
 
+      <Panel style={styles.focusPanel}>
+        <Text style={styles.sectionTitle}>Form Durumu</Text>
+        <Text style={styles.focusText}>
+          Hedef netligi ve hizli geri bildirim oyuncuyu oyunda tutar. Son performansi gorup tek
+          dokunusla yeni maca gec.
+        </Text>
+        <View style={styles.chipRow}>
+          <StatChip label="Oynanan mac" value={`${statsSummary.matchesPlayed}`} />
+          <StatChip label="Toplam dogru" value={`${statsSummary.correctCount}`} />
+          <StatChip label="En iyi skor" value={`${statsSummary.bestScore}`} />
+          <StatChip label="Son maclar" value={`${recentMatches.length}`} />
+        </View>
+      </Panel>
+
       {savedSession ? (
         <Panel>
           <Text style={styles.sectionTitle}>Aktif mac bulundu</Text>
@@ -61,6 +82,7 @@ export function HomeScreen({
 
       <View style={styles.buttonStack}>
         <PrimaryButton label="Yeni Oyun" onPress={onOpenSetup} />
+        <SecondaryButton label="Istatistikler" onPress={onOpenStats} />
         <SecondaryButton label="Kurallar" onPress={onOpenRules} />
       </View>
     </ScrollView>
@@ -109,6 +131,15 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 16,
     lineHeight: 24,
+  },
+  focusPanel: {
+    borderColor: colors.successMuted,
+  },
+  focusText: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: spacing.md,
   },
   buttonStack: {
     gap: spacing.md,

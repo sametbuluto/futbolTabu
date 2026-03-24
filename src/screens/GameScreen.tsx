@@ -3,6 +3,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton, SecondaryButton } from '../components/Button';
 import { DangerButton } from '../components/DangerButton';
 import { Panel } from '../components/Panel';
+import { ProgressBar } from '../components/ProgressBar';
 import { StatChip } from '../components/StatChip';
 import { MatchState, Card } from '../types/game';
 import { colors, spacing } from '../theme/tokens';
@@ -33,9 +34,17 @@ export function GameScreen({
 }: GameScreenProps) {
   const activeTeam = match.teams[match.activeTeamIndex];
   const timerColor = match.remainingSeconds <= 10 ? colors.danger : colors.textPrimary;
+  const timeProgress = match.remainingSeconds / match.settings.roundDurationSeconds;
+  const roundProgress = match.currentRound / match.settings.totalRounds;
   const passValue = match.settings.passLimitEnabled
     ? `${match.roundStats.passCount}/${match.settings.passLimitPerRound ?? 0}`
     : `${match.roundStats.passCount}`;
+  const tempoLabel =
+    match.remainingSeconds <= 10
+      ? 'Baski ani'
+      : match.remainingSeconds <= 20
+        ? 'Hizlanma zamani'
+        : 'Rahat tempo';
 
   return (
     <View style={styles.gameScreen}>
@@ -50,6 +59,31 @@ export function GameScreen({
           </View>
         ))}
       </View>
+
+      <Panel style={styles.progressPanel}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressTitle}>Mac ilerleyisi</Text>
+          <Text style={styles.progressValue}>
+            Tur {match.currentRound}/{match.settings.totalRounds}
+          </Text>
+        </View>
+        <ProgressBar tone="success" value={roundProgress} />
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressTitle}>Tur temposu</Text>
+          <Text
+            style={[
+              styles.progressValue,
+              match.remainingSeconds <= 10 ? styles.urgentText : null,
+            ]}
+          >
+            {tempoLabel}
+          </Text>
+        </View>
+        <ProgressBar
+          tone={match.remainingSeconds <= 10 ? 'danger' : 'neutral'}
+          value={timeProgress}
+        />
+      </Panel>
 
       <View style={styles.gameTopRow}>
         <View style={styles.roundSummary}>
@@ -169,6 +203,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     justifyContent: 'space-between',
+  },
+  progressPanel: {
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  progressHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressTitle: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  progressValue: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  urgentText: {
+    color: colors.danger,
   },
   roundSummary: {
     gap: 2,
