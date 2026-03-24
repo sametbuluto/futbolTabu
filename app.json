@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": ".scaffold",
-    "slug": ".scaffold",
+    "name": "Futbol Tabu",
+    "slug": "futbol-tabu",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
