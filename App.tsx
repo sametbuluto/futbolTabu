@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -14,6 +14,7 @@ import {
 import { PrimaryButton, SecondaryButton } from './src/components/Button';
 import { Panel } from './src/components/Panel';
 import { StatChip } from './src/components/StatChip';
+import { useGameAudio } from './src/audio/useGameAudio';
 import { SAMPLE_CARDS } from './src/data/cards';
 import {
   canUsePass,
@@ -44,6 +45,7 @@ type SetupFormState = {
   totalRounds: number;
   passLimitEnabled: boolean;
   passLimitPerRound: number;
+  soundEnabled: boolean;
 };
 
 type UndoState = {
@@ -58,6 +60,7 @@ const initialSetupState: SetupFormState = {
   totalRounds: defaultSettings.totalRounds,
   passLimitEnabled: false,
   passLimitPerRound: 3,
+  soundEnabled: true,
 };
 
 export default function App() {
@@ -67,6 +70,8 @@ export default function App() {
   const [countdown, setCountdown] = useState(3);
   const [undoState, setUndoState] = useState<UndoState | null>(null);
   const [savedSession, setSavedSession] = useState<PersistedMatchSession | null>(null);
+  const previousScreenRef = useRef<Screen>('home');
+  const audio = useGameAudio(setup.soundEnabled);
 
   useEffect(() => {
     async function hydrateSession() {
@@ -123,6 +128,20 @@ export default function App() {
 
     return () => clearTimeout(timeout);
   }, [screen, undoState]);
+
+  useEffect(() => {
+    const previousScreen = previousScreenRef.current;
+
+    if (screen === 'game' && previousScreen === 'countdown') {
+      void audio.playRoundStart();
+    }
+
+    if (screen === 'summary' && previousScreen === 'game') {
+      void audio.playRoundEnd();
+    }
+
+    previousScreenRef.current = screen;
+  }, [audio, screen]);
 
   useEffect(() => {
     const shouldPersist = match && (screen === 'countdown' || screen === 'game' || screen === 'summary');
@@ -216,7 +235,10 @@ export default function App() {
       return;
     }
 
-    setSetup(savedSession.setup);
+    setSetup({
+      ...initialSetupState,
+      ...savedSession.setup,
+    });
     setMatch(savedSession.match);
     setCountdown(savedSession.countdown);
     setUndoState(null);
@@ -240,16 +262,19 @@ export default function App() {
     if (action === 'correct') {
       nextMatch = markCorrect(match);
       actionLabel = 'Dogru';
+      void audio.playCorrect();
     }
 
     if (action === 'pass') {
       nextMatch = markPass(match);
       actionLabel = 'Pas';
+      void audio.playPass();
     }
 
     if (action === 'tabu') {
       nextMatch = markTabu(match);
       actionLabel = 'Tabu';
+      void audio.playTabu();
     }
 
     if (nextMatch === previousMatch) {
@@ -290,6 +315,7 @@ export default function App() {
             <StatChip label="Kart Havuzu" value={`${SAMPLE_CARDS.length} kart`} />
             <StatChip label="Format" value="2 takim" />
             <StatChip label="Mod" value="Offline" />
+            <StatChip label="Ses" value={setup.soundEnabled ? 'Acik' : 'Kapali'} />
           </View>
         </Panel>
 
@@ -342,6 +368,14 @@ export default function App() {
           <Text style={styles.bodyText}>
             Oyun countdown, aktif tur veya tur ozeti ekranindayken cihazdan cikilsa bile aktif
             session saklanir. Mac bittiginde veya kullanici kaydi silerse bu session temizlenir.
+          </Text>
+        </Panel>
+
+        <Panel>
+          <Text style={styles.sectionTitle}>Ses Atmosferi</Text>
+          <Text style={styles.bodyText}>
+            Tur baslangicinda hakem dudugu, tur bitisinde mac sonu dudugu ve kart gecislerinde
+            aksiyon efektleri kullanilir.
           </Text>
         </Panel>
       </ScrollView>
@@ -406,6 +440,19 @@ export default function App() {
               thumbColor={setup.passLimitEnabled ? colors.success : colors.surfaceRaised}
               trackColor={{ false: colors.surfaceRaised, true: colors.successMuted }}
               value={setup.passLimitEnabled}
+            />
+          </View>
+
+          <View style={styles.switchRow}>
+            <View>
+              <Text style={styles.settingLabel}>Ses efektleri</Text>
+              <Text style={styles.settingHint}>Hakem dudugu ve kart aksiyon seslerini acar.</Text>
+            </View>
+            <Switch
+              onValueChange={(value) => updateSetup('soundEnabled', value)}
+              thumbColor={setup.soundEnabled ? colors.success : colors.surfaceRaised}
+              trackColor={{ false: colors.surfaceRaised, true: colors.successMuted }}
+              value={setup.soundEnabled}
             />
           </View>
 
@@ -474,6 +521,7 @@ export default function App() {
           <StatChip label="Aktif takim" value={activeTeam.name} />
           <StatChip label="Pas" value={`${match.roundStats.passCount}`} />
           <StatChip label="Log" value={`${match.eventLog.length} aksiyon`} />
+          <StatChip label="Ses" value={setup.soundEnabled ? 'Acik' : 'Kapali'} />
         </View>
 
         <Panel style={styles.timerPanel}>

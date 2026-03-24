@@ -15,6 +15,7 @@ export type PersistedMatchSession = {
     totalRounds: number;
     passLimitEnabled: boolean;
     passLimitPerRound: number;
+    soundEnabled: boolean;
   };
   savedAt: string;
 };
@@ -30,7 +31,15 @@ export async function loadActiveMatchSession() {
     return null;
   }
 
-  return JSON.parse(rawValue) as PersistedMatchSession;
+  const parsed = JSON.parse(rawValue) as PersistedMatchSession;
+
+  return {
+    ...parsed,
+    setup: {
+      ...parsed.setup,
+      soundEnabled: parsed.setup.soundEnabled ?? true,
+    },
+  };
 }
 
 export async function clearActiveMatchSession() {
