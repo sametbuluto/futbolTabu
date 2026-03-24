@@ -4,10 +4,8 @@ import { PrimaryButton, SecondaryButton } from '../components/Button';
 import { DangerButton } from '../components/DangerButton';
 import { Panel } from '../components/Panel';
 import { ProgressBar } from '../components/ProgressBar';
-import { StatChip } from '../components/StatChip';
 import { MatchState, Card } from '../types/game';
 import { colors, spacing } from '../theme/tokens';
-import { formatCategory } from '../utils/formatCategory';
 
 type GameScreenProps = {
   match: MatchState;
@@ -32,113 +30,89 @@ export function GameScreen({
   onTabu,
   onUndo,
 }: GameScreenProps) {
-  const activeTeam = match.teams[match.activeTeamIndex];
+  const leftTeam = match.teams[0];
+  const rightTeam = match.teams[1];
   const timerColor = match.remainingSeconds <= 10 ? colors.danger : colors.textPrimary;
   const timeProgress = match.remainingSeconds / match.settings.roundDurationSeconds;
-  const roundProgress = match.currentRound / match.settings.totalRounds;
   const passValue = match.settings.passLimitEnabled
     ? `${match.roundStats.passCount}/${match.settings.passLimitPerRound ?? 0}`
     : `${match.roundStats.passCount}`;
-  const tempoLabel =
-    match.remainingSeconds <= 10
-      ? 'Baski ani'
-      : match.remainingSeconds <= 20
-        ? 'Hizlanma zamani'
-        : 'Rahat tempo';
-  const coachText =
-    match.remainingSeconds <= 10
-      ? 'Kisa ipuclari ver, tek hedefte kal.'
-      : canPass
-        ? 'Zor kartta takilirsan pas hakkini stratejik kullan.'
-        : 'Pas bitti, daha net ve dar ipuclari ver.';
 
   return (
     <View style={styles.gameScreen}>
       <View style={styles.scoreboard}>
-        {match.teams.map((team, index) => (
-          <View
-            key={team.id}
-            style={[styles.scoreTile, index === match.activeTeamIndex ? styles.scoreTileActive : null]}
-          >
-            <Text style={styles.scoreTeamName}>{team.name}</Text>
-            <Text style={styles.scoreValue}>{team.score}</Text>
-          </View>
-        ))}
-      </View>
-
-      <Panel style={styles.progressPanel}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressTitle}>Mac ilerleyisi</Text>
-          <Text style={styles.progressValue}>
-            Tur {match.currentRound}/{match.settings.totalRounds}
-          </Text>
+        <View
+          style={[styles.scoreTile, match.activeTeamIndex === 0 ? styles.scoreTileActive : null]}
+        >
+          <Text style={styles.scoreTeamName}>{leftTeam.name}</Text>
+          <Text style={styles.scoreValue}>{leftTeam.score}</Text>
         </View>
-        <ProgressBar tone="success" value={roundProgress} />
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressTitle}>Tur temposu</Text>
-          <Text
-            style={[
-              styles.progressValue,
-              match.remainingSeconds <= 10 ? styles.urgentText : null,
-            ]}
-          >
-            {tempoLabel}
-          </Text>
+        <View style={styles.roundBadgeWrap}>
+          <View style={styles.roundBadgeConnector} />
         </View>
-        <ProgressBar
-          tone={match.remainingSeconds <= 10 ? 'danger' : 'neutral'}
-          value={timeProgress}
-        />
-      </Panel>
-
-      <View style={styles.gameTopRow}>
-        <View style={styles.roundSummary}>
-          <Text style={styles.roundSummaryLabel}>Tur</Text>
-          <Text style={styles.roundSummaryValue}>
+        <View style={styles.roundBadge}>
+          <Text style={styles.roundBadgeLabel}>Tur</Text>
+          <Text style={styles.roundBadgeValue}>
             {match.currentRound}/{match.settings.totalRounds}
           </Text>
         </View>
-
-        <View style={styles.gameBadgeRow}>
-          <StatChip label="Aktif takim" value={activeTeam.name} />
-          <StatChip label="Pas" value={passValue} />
-          <Pressable
-            accessibilityLabel="Oyunu duraklat"
-            accessibilityRole="button"
-            onPress={onPause}
-            style={({ pressed }) => [styles.pauseButton, pressed ? styles.buttonPressed : null]}
-          >
-            <View style={styles.pauseIcon}>
-              <View style={styles.pauseIconBar} />
-              <View style={styles.pauseIconBar} />
-            </View>
-          </Pressable>
+        <View
+          style={[styles.scoreTile, match.activeTeamIndex === 1 ? styles.scoreTileActive : null]}
+        >
+          <Text style={styles.scoreTeamName}>{rightTeam.name}</Text>
+          <Text style={styles.scoreValue}>{rightTeam.score}</Text>
         </View>
       </View>
 
-      <View style={styles.coachBar}>
-        <Text style={styles.coachLabel}>Oyun koçu</Text>
-        <Text style={styles.coachText}>{coachText}</Text>
+      <View style={styles.utilityRow}>
+        <View style={styles.timerBarWrap}>
+          <ProgressBar
+            tone={match.remainingSeconds <= 10 ? 'danger' : 'neutral'}
+            value={timeProgress}
+          />
+        </View>
+        <Pressable
+          accessibilityLabel="Oyunu duraklat"
+          accessibilityRole="button"
+          onPress={onPause}
+          style={({ pressed }) => [styles.pauseButton, pressed ? styles.buttonPressed : null]}
+        >
+          <View style={styles.pauseIcon}>
+            <View style={styles.pauseIconBar} />
+            <View style={styles.pauseIconBar} />
+          </View>
+        </Pressable>
       </View>
 
       <View style={styles.mainPlayArea}>
         <Panel style={styles.cardPanel}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardCategory}>{formatCategory(currentCard.category)}</Text>
-            <View style={styles.timerInline}>
-              <Text style={styles.timerLabel}>Sure</Text>
-              <Text style={[styles.timerValue, { color: timerColor }]}>{match.remainingSeconds}</Text>
-            </View>
-          </View>
-
-          <Text style={styles.cardTerm}>{currentCard.term}</Text>
-          <Text style={styles.forbiddenSectionLabel}>Tabu kelimeler</Text>
-          <View style={styles.forbiddenGrid}>
-            {currentCard.forbiddenWords.map((word) => (
-              <View key={word} style={styles.forbiddenItem}>
-                <Text style={styles.forbiddenText}>{word}</Text>
+          <View style={styles.cardContent}>
+            <View style={styles.termRow}>
+              <View style={styles.termMetaPill}>
+                <Text style={styles.termMetaLabel}>Pas</Text>
+                <Text style={styles.termMetaValue}>{passValue}</Text>
               </View>
-            ))}
+              <Text style={styles.cardTerm}>{currentCard.term}</Text>
+              <View style={styles.termMetaPill}>
+                <Text style={styles.termMetaLabel}>Sure</Text>
+                <Text style={[styles.termMetaValue, { color: timerColor }]}>
+                  {match.remainingSeconds}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.forbiddenSection}>
+              <Text style={styles.forbiddenSectionLabel}>Tabu kelimeler</Text>
+              <View style={styles.forbiddenList}>
+                {currentCard.forbiddenWords.map((word, index) => (
+                  <View key={word} style={styles.forbiddenRow}>
+                    <View style={styles.forbiddenIndex}>
+                      <Text style={styles.forbiddenIndexText}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.forbiddenText}>{word}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
           </View>
         </Panel>
 
@@ -184,201 +158,213 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   scoreboard: {
+    alignItems: 'stretch',
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   scoreTile: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 1,
     flex: 1,
-    padding: spacing.md,
+    minHeight: 82,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
   },
   scoreTileActive: {
     borderColor: colors.success,
   },
   scoreTeamName: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
-    marginBottom: spacing.xs,
+    marginBottom: 2,
   },
   scoreValue: {
     color: colors.textPrimary,
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '900',
   },
-  gameTopRow: {
+  roundBadgeWrap: {
     alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    width: 0,
   },
-  progressPanel: {
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
+  roundBadgeConnector: {
+    backgroundColor: colors.border,
+    borderRadius: 999,
+    height: 64,
+    width: 1,
   },
-  progressHeader: {
+  roundBadge: {
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    justifyContent: 'center',
+    marginHorizontal: -4,
+    minWidth: 76,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  progressTitle: {
+  roundBadgeLabel: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
-  progressValue: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '700',
+  roundBadgeValue: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '900',
   },
-  urgentText: {
-    color: colors.danger,
+  utilityRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
-  coachBar: {
-    backgroundColor: colors.surfaceRaised,
+  timerBarWrap: {
+    backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 18,
     borderWidth: 1,
-    gap: 4,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-  },
-  coachLabel: {
-    color: colors.success,
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  coachText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
-  },
-  roundSummary: {
-    gap: 2,
-  },
-  roundSummaryLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  roundSummaryValue: {
-    color: colors.textPrimary,
-    fontSize: 22,
-    fontWeight: '900',
-  },
-  gameBadgeRow: {
-    alignItems: 'center',
     flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    minHeight: 16,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 0,
   },
   pauseButton: {
     alignItems: 'center',
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    height: 44,
+    height: 34,
     justifyContent: 'center',
-    width: 44,
+    width: 34,
   },
   pauseIcon: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 4,
+    gap: 3,
     justifyContent: 'center',
   },
   pauseIconBar: {
     backgroundColor: colors.textPrimary,
     borderRadius: 999,
-    height: 14,
-    width: 4,
+    height: 10,
+    width: 3,
   },
   mainPlayArea: {
     flex: 1,
-    gap: spacing.md,
+    gap: spacing.xs,
   },
   cardPanel: {
     flex: 1,
+    justifyContent: 'flex-start',
     minHeight: 0,
-  },
-  cardHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  cardCategory: {
-    color: colors.success,
-    fontSize: 14,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  timerInline: {
-    alignItems: 'flex-end',
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: 16,
-    minWidth: 82,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.md,
   },
-  timerLabel: {
-    color: colors.textMuted,
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+  cardContent: {
+    alignItems: 'center',
+    gap: spacing.md,
+    justifyContent: 'flex-start',
+    width: '100%',
   },
-  timerValue: {
-    fontSize: 30,
-    fontWeight: '900',
-    lineHeight: 34,
-    marginTop: 2,
-  },
-  cardTerm: {
-    color: colors.textPrimary,
-    fontSize: 32,
-    fontWeight: '900',
-    lineHeight: 36,
-    marginBottom: spacing.md,
-    marginTop: spacing.lg,
-  },
-  forbiddenSectionLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-    textTransform: 'uppercase',
-  },
-  forbiddenGrid: {
+  termRow: {
+    alignItems: 'center',
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: spacing.sm,
+    width: '100%',
   },
-  forbiddenItem: {
+  termMetaPill: {
+    alignItems: 'center',
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.border,
     borderRadius: 16,
     borderWidth: 1,
+    minHeight: 56,
     justifyContent: 'center',
-    minHeight: 48,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    width: '48%',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 8,
+    width: 68,
+  },
+  termMetaLabel: {
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  termMetaValue: {
+    color: colors.textPrimary,
+    fontSize: 17,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  cardTerm: {
+    color: colors.textPrimary,
+    fontSize: 30,
+    flex: 1,
+    fontWeight: '900',
+    lineHeight: 34,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  forbiddenSection: {
+    backgroundColor: colors.surfaceRaised,
+    borderColor: colors.border,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 0,
+    padding: spacing.sm,
+    width: '100%',
+  },
+  forbiddenSectionLabel: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+  },
+  forbiddenList: {
+    gap: spacing.sm,
+    width: '100%',
+  },
+  forbiddenRow: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 8,
+    width: '100%',
+  },
+  forbiddenIndex: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: 999,
+    height: 28,
+    justifyContent: 'center',
+    width: 28,
+  },
+  forbiddenIndexText: {
+    color: colors.success,
+    fontSize: 12,
+    fontWeight: '800',
   },
   forbiddenText: {
     color: colors.textSecondary,
+    flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    textAlign: 'center',
+    lineHeight: 18,
   },
   actionRow: {
     flexDirection: 'row',
