@@ -6,7 +6,7 @@ export const ACTIVE_MATCH_STORAGE_KEY = 'stadium-tabu/active-match';
 
 export type PersistedMatchSession = {
   match: MatchState;
-  screen: 'countdown' | 'game' | 'summary';
+  screen: 'countdown' | 'game' | 'paused' | 'summary';
   countdown: number;
   setup: {
     teamOne: string;

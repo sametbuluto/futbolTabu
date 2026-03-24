@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleProp, StyleSheet, Text, TextStyle, ViewStyle } from 'react-native';
 
 import { colors, spacing } from '../theme/tokens';
 
@@ -6,9 +6,17 @@ type ButtonProps = {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
 };
 
-export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps) {
+export function PrimaryButton({
+  label,
+  onPress,
+  disabled = false,
+  style,
+  labelStyle,
+}: ButtonProps) {
   return (
     <Pressable
       disabled={disabled}
@@ -16,16 +24,23 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
       style={({ pressed }) => [
         styles.base,
         styles.primary,
+        style,
         disabled ? styles.disabled : null,
         pressed && !disabled ? styles.pressed : null,
       ]}
     >
-      <Text style={styles.primaryLabel}>{label}</Text>
+      <Text style={[styles.primaryLabel, labelStyle]}>{label}</Text>
     </Pressable>
   );
 }
 
-export function SecondaryButton({ label, onPress, disabled = false }: ButtonProps) {
+export function SecondaryButton({
+  label,
+  onPress,
+  disabled = false,
+  style,
+  labelStyle,
+}: ButtonProps) {
   return (
     <Pressable
       disabled={disabled}
@@ -33,11 +48,12 @@ export function SecondaryButton({ label, onPress, disabled = false }: ButtonProp
       style={({ pressed }) => [
         styles.base,
         styles.secondary,
+        style,
         disabled ? styles.disabled : null,
         pressed && !disabled ? styles.pressed : null,
       ]}
     >
-      <Text style={styles.secondaryLabel}>{label}</Text>
+      <Text style={[styles.secondaryLabel, labelStyle]}>{label}</Text>
     </Pressable>
   );
 }
