@@ -45,6 +45,12 @@ export function GameScreen({
       : match.remainingSeconds <= 20
         ? 'Hizlanma zamani'
         : 'Rahat tempo';
+  const coachText =
+    match.remainingSeconds <= 10
+      ? 'Kisa ipuclari ver, tek hedefte kal.'
+      : canPass
+        ? 'Zor kartta takilirsan pas hakkini stratejik kullan.'
+        : 'Pas bitti, daha net ve dar ipuclari ver.';
 
   return (
     <View style={styles.gameScreen}>
@@ -108,6 +114,11 @@ export function GameScreen({
             </View>
           </Pressable>
         </View>
+      </View>
+
+      <View style={styles.coachBar}>
+        <Text style={styles.coachLabel}>Oyun koçu</Text>
+        <Text style={styles.coachText}>{coachText}</Text>
       </View>
 
       <View style={styles.mainPlayArea}>
@@ -226,6 +237,27 @@ const styles = StyleSheet.create({
   },
   urgentText: {
     color: colors.danger,
+  },
+  coachBar: {
+    backgroundColor: colors.surfaceRaised,
+    borderColor: colors.border,
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  coachLabel: {
+    color: colors.success,
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  coachText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 20,
   },
   roundSummary: {
     gap: 2,

@@ -67,6 +67,24 @@ export function HomeScreen({
         </View>
       </Panel>
 
+      <Panel>
+        <Text style={styles.sectionTitle}>Hizli Baslangic</Text>
+        <View style={styles.quickStartRow}>
+          <View style={styles.quickStep}>
+            <Text style={styles.quickStepIndex}>1</Text>
+            <Text style={styles.quickStepTitle}>Takimlari kur</Text>
+          </View>
+          <View style={styles.quickStep}>
+            <Text style={styles.quickStepIndex}>2</Text>
+            <Text style={styles.quickStepTitle}>Telefonu devret</Text>
+          </View>
+          <View style={styles.quickStep}>
+            <Text style={styles.quickStepIndex}>3</Text>
+            <Text style={styles.quickStepTitle}>Hizli karar ver</Text>
+          </View>
+        </View>
+      </Panel>
+
       {savedSession ? (
         <Panel>
           <Text style={styles.sectionTitle}>Aktif mac bulundu</Text>
@@ -140,6 +158,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginBottom: spacing.md,
+  },
+  quickStartRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  quickStep: {
+    backgroundColor: colors.surfaceRaised,
+    borderRadius: 18,
+    flex: 1,
+    minHeight: 96,
+    padding: spacing.md,
+  },
+  quickStepIndex: {
+    color: colors.success,
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: spacing.sm,
+  },
+  quickStepTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 20,
   },
   buttonStack: {
     gap: spacing.md,
