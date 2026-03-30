@@ -74,19 +74,6 @@ export function SetupScreen({ setup, onUpdateSetup, onBack, onStart }: SetupScre
           />
         </View>
 
-        <View style={styles.switchRow}>
-          <View>
-            <Text style={styles.settingLabel}>Ses efektleri</Text>
-            <Text style={styles.settingHint}>Hakem dudugu ve kart aksiyon seslerini acar.</Text>
-          </View>
-          <Switch
-            onValueChange={(value) => onUpdateSetup('soundEnabled', value)}
-            thumbColor={setup.soundEnabled ? colors.success : colors.surfaceRaised}
-            trackColor={{ false: colors.surfaceRaised, true: colors.successMuted }}
-            value={setup.soundEnabled}
-          />
-        </View>
-
         {setup.passLimitEnabled ? (
           <SettingRow
             label="Pas hakki"
@@ -99,6 +86,19 @@ export function SetupScreen({ setup, onUpdateSetup, onBack, onStart }: SetupScre
             value={`${setup.passLimitPerRound}`}
           />
         ) : null}
+
+        <View style={styles.switchRow}>
+          <View>
+            <Text style={styles.settingLabel}>Ses efektleri</Text>
+            <Text style={styles.settingHint}>Hakem dudugu ve kart aksiyon seslerini acar.</Text>
+          </View>
+          <Switch
+            onValueChange={(value) => onUpdateSetup('soundEnabled', value)}
+            thumbColor={setup.soundEnabled ? colors.success : colors.surfaceRaised}
+            trackColor={{ false: colors.surfaceRaised, true: colors.successMuted }}
+            value={setup.soundEnabled}
+          />
+        </View>
       </Panel>
 
       <PrimaryButton label="Oyunu Baslat" onPress={onStart} />

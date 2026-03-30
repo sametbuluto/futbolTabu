@@ -113,30 +113,30 @@ export function GameScreen({
                 ))}
               </View>
             </View>
+
+            <View style={styles.actionRow}>
+              <SecondaryButton
+                disabled={!canPass}
+                label={canPass ? 'Pas' : 'Pas bitti'}
+                labelStyle={styles.gameActionLabel}
+                onPress={onPass}
+                style={styles.gameActionButton}
+              />
+              <DangerButton
+                label="Tabu"
+                onPress={onTabu}
+                style={styles.gameActionButton}
+                textStyle={styles.gameActionLabel}
+              />
+              <PrimaryButton
+                label="Dogru"
+                labelStyle={styles.gameActionLabel}
+                onPress={onCorrect}
+                style={styles.gameActionButton}
+              />
+            </View>
           </View>
         </Panel>
-
-        <View style={styles.actionRow}>
-          <SecondaryButton
-            disabled={!canPass}
-            label={canPass ? 'Pas' : 'Pas bitti'}
-            labelStyle={styles.gameActionLabel}
-            onPress={onPass}
-            style={styles.gameActionButton}
-          />
-          <DangerButton
-            label="Tabu"
-            onPress={onTabu}
-            style={styles.gameActionButton}
-            textStyle={styles.gameActionLabel}
-          />
-          <PrimaryButton
-            label="Dogru"
-            labelStyle={styles.gameActionLabel}
-            onPress={onCorrect}
-            style={styles.gameActionButton}
-          />
-        </View>
       </View>
 
       {undoLabel ? (
@@ -156,6 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.md,
     padding: spacing.lg,
+    position: 'relative',
   },
   scoreboard: {
     alignItems: 'stretch',
@@ -261,6 +262,7 @@ const styles = StyleSheet.create({
   mainPlayArea: {
     flex: 1,
     gap: spacing.xs,
+    paddingBottom: 76,
   },
   cardPanel: {
     flex: 1,
@@ -273,8 +275,9 @@ const styles = StyleSheet.create({
   cardContent: {
     alignItems: 'center',
     gap: spacing.md,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     width: '100%',
+    flex: 1,
   },
   termRow: {
     alignItems: 'center',
@@ -369,7 +372,9 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+    marginTop: spacing.xs,
     paddingBottom: Platform.OS === 'ios' ? spacing.xs : 0,
+    width: '100%',
   },
   gameActionButton: {
     flex: 1,
@@ -388,8 +393,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    left: spacing.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
+    position: 'absolute',
+    right: spacing.lg,
+    bottom: spacing.lg,
   },
   undoText: {
     color: colors.textSecondary,
